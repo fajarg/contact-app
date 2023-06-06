@@ -5,6 +5,7 @@ import {
   useGetAllContactQuery,
   useGetContactByIdQuery,
   usePutContactMutation,
+  usePostContactMutation,
 } from "./redux/contactApiSlice";
 import { useState } from "react";
 
@@ -18,6 +19,7 @@ function App() {
   });
   const { data, isLoading } = useGetAllContactQuery();
   const { data: detail, isFetching } = useGetContactByIdQuery(id);
+  const [postContact] = usePostContactMutation();
   const [putContact] = usePutContactMutation();
 
   const showContactDetail = (id) => {
@@ -34,7 +36,24 @@ function App() {
     setId(id);
   };
 
-  const processAddContact = () => {};
+  const processAddContact = () => {
+    const data = {
+      firstName: form?.firstName,
+      lastName: form?.lastName,
+      age: parseInt(form?.age),
+      photo: form?.photo,
+    };
+
+    postContact({ ...data });
+
+    setForm((prev) => ({
+      ...prev,
+      firstName: "",
+      lastName: "",
+      age: null,
+      photo: "",
+    }));
+  };
 
   const processEditContact = (id) => {
     const data = {
@@ -136,7 +155,7 @@ function App() {
       <dialog id="add" className="modal modal-bottom sm:modal-middle">
         <form method="dialog" className="modal-box">
           <button
-            htmlFor="my-modal-3"
+            htmlFor="add"
             className="absolute btn btn-sm btn-circle btn-ghost right-2 top-2"
           >
             ✕
@@ -204,10 +223,7 @@ function App() {
               </div>
               <div className="modal-action">
                 {/* if there is a button in form, it will close the modal */}
-                <button
-                  className="btn"
-                  onClick={() => processEditContact(detail?.data.id)}
-                >
+                <button className="btn" onClick={processAddContact}>
                   Add Contact
                 </button>
               </div>
@@ -221,7 +237,7 @@ function App() {
       <dialog id="edit" className="modal modal-bottom sm:modal-middle">
         <form method="dialog" className="modal-box">
           <button
-            htmlFor="my-modal-3"
+            htmlFor="edit"
             className="absolute btn btn-sm btn-circle btn-ghost right-2 top-2"
           >
             ✕
@@ -316,7 +332,7 @@ function App() {
           ) : (
             <>
               <button
-                htmlFor="my-modal-3"
+                htmlFor="detail"
                 className="absolute btn btn-sm btn-circle btn-ghost right-2 top-2"
               >
                 ✕
