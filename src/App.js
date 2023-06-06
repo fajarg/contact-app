@@ -3,20 +3,43 @@ import { BiDetail, BiTrash } from "react-icons/bi";
 import {
   useGetAllContactQuery,
   useGetContactByIdQuery,
+  usePutContactMutation,
 } from "./redux/contactApiSlice";
 import { useState } from "react";
 
 function App() {
   const [id, setId] = useState(null);
+  const [form, setForm] = useState({
+    firstName: "",
+    lastName: "",
+    photo: "",
+    age: "",
+  });
   const { data, isLoading } = useGetAllContactQuery();
   const { data: detail, isFetching } = useGetContactByIdQuery(id);
+  const [putContact] = usePutContactMutation();
 
   const showContactDetail = (id) => {
-    window.my_modal_2.showModal();
+    window.detail.showModal();
     setId(id);
   };
 
-  console.log(detail);
+  const editContact = (id) => {
+    window.edit.showModal();
+    setId(id);
+  };
+
+  const processEditContact = (id) => {
+    const data = {
+      id: id,
+      firstName: form?.firstName ? form.firstName : detail?.data.firstName,
+      lastName: form?.lastName ? form.lastName : detail?.data.lastName,
+      age: form?.age ? form.age : detail?.data.age,
+      photo: form?.photo ? form.photo : detail?.data.photo,
+    };
+
+    putContact({ ...data });
+  };
 
   return (
     <>
@@ -69,7 +92,10 @@ function App() {
                       >
                         <BiDetail />
                       </button>
-                      <button className="text-lg btn btn-ghost btn-xs">
+                      <button
+                        className="text-lg btn btn-ghost btn-xs"
+                        onClick={() => editContact(data.id)}
+                      >
                         <HiPencilAlt />
                       </button>
                       <button className="text-lg btn btn-ghost btn-xs">
@@ -84,8 +110,97 @@ function App() {
         </div>
       )}
 
+      {/* edit */}
+      <dialog id="edit" className="modal modal-bottom sm:modal-middle">
+        <form method="dialog" className="modal-box">
+          <button
+            htmlFor="my-modal-3"
+            className="absolute btn btn-sm btn-circle btn-ghost right-2 top-2"
+          >
+            ✕
+          </button>
+          {isFetching ? (
+            <div className="flex items-center justify-center flex-1">
+              <span className="loading loading-spinner loading-lg"></span>
+            </div>
+          ) : (
+            <>
+              <h3 className="text-lg font-bold">Contact Edit</h3>
+              <div className="mt-5">
+                <h4 className="py-4 font-semibold">Photo url</h4>
+                <input
+                  type="text"
+                  name="photo"
+                  placeholder="Type here"
+                  className="w-full input input-bordered"
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, photo: e.target.value }))
+                  }
+                  defaultValue={detail?.data?.photo}
+                />
+                <div className="flex gap-8">
+                  <div>
+                    <h4 className="py-4 font-semibold">First Name</h4>
+                    <input
+                      type="text"
+                      name="firstName"
+                      placeholder="Type here"
+                      className="w-full input input-bordered"
+                      onChange={(e) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          firstName: e.target.value,
+                        }))
+                      }
+                      defaultValue={detail?.data?.firstName}
+                    />
+                  </div>
+                  <div>
+                    <h4 className="py-4 font-semibold">Last Name</h4>
+                    <input
+                      type="text"
+                      name="lastName"
+                      placeholder="Type here"
+                      className="w-full input input-bordered"
+                      onChange={(e) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          lastName: e.target.value,
+                        }))
+                      }
+                      defaultValue={detail?.data?.lastName}
+                    />
+                  </div>
+                </div>
+                <h4 className="py-4 font-semibold">Age</h4>
+                <input
+                  type="number"
+                  name="age"
+                  placeholder="Type here"
+                  className="w-full input input-bordered"
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, age: e.target.value }))
+                  }
+                  defaultValue={detail?.data?.age}
+                />
+              </div>
+              <div className="modal-action">
+                {/* if there is a button in form, it will close the modal */}
+                <button
+                  className="btn"
+                  onClick={() => processEditContact(detail?.data.id)}
+                >
+                  Update
+                </button>
+              </div>
+            </>
+          )}
+        </form>
+      </dialog>
+      {/* edit */}
+
       {/* detail */}
-      <dialog id="my_modal_2" className="modal modal-bottom sm:modal-middle">
+      <dialog id="detail" className="modal modal-bottom sm:modal-middle">
         <form method="dialog" className="modal-box">
           {isFetching ? (
             <div className="flex items-center justify-center flex-1">
