@@ -43,16 +43,16 @@ export const contactApiSlice = createApi({
     }),
     putContact: builder.mutation({
       query: (data) => ({
-        url: `/contact/${data?.id}`,
+        url: `/contact/${data.id}`,
         method: "PUT",
         headers: {
           "Content-type": "application/json",
         },
         body: {
-          firstName: data?.firstName,
-          lastName: data?.lastName,
-          age: data?.age,
-          photo: data?.photo,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          age: data.age,
+          photo: data.photo,
         },
       }),
       invalidatesTags: ["contactApi"],
