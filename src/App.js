@@ -6,6 +6,7 @@ import {
   useGetContactByIdQuery,
   usePutContactMutation,
   usePostContactMutation,
+  useDeleteContactMutation,
 } from "./redux/contactApiSlice";
 import { useState } from "react";
 
@@ -18,13 +19,15 @@ function App() {
     age: null,
   });
   const { data, isLoading } = useGetAllContactQuery();
-  const { data: detail, isFetching } = useGetContactByIdQuery(id);
+  const { data: detail, isFetching, refetch } = useGetContactByIdQuery(id);
   const [postContact] = usePostContactMutation();
   const [putContact] = usePutContactMutation();
+  const [deleteContact] = useDeleteContactMutation();
 
   const showContactDetail = (id) => {
-    window.detail.showModal();
     setId(id);
+    window.detail.showModal();
+    refetch();
   };
 
   const addContact = () => {
@@ -32,8 +35,14 @@ function App() {
   };
 
   const editContact = (id) => {
-    window.edit.showModal();
     setId(id);
+    refetch();
+    window.edit.showModal();
+  };
+
+  const showDeleteModal = (id) => {
+    setId(id);
+    window.delete.showModal();
   };
 
   const processAddContact = () => {
@@ -75,7 +84,9 @@ function App() {
     }));
   };
 
-  console.log(form);
+  const processDeleteContact = (id) => {
+    deleteContact(id);
+  };
 
   return (
     <>
@@ -86,17 +97,24 @@ function App() {
       </div>
       {isLoading ? (
         <div className="flex items-center justify-center flex-1 h-[50vh]">
-          <span className="loading loading-spinner loading-lg"></span>
+          <span
+            className="loading loading-spinner loading-lg"
+            data-testid="loading-main-data"
+          ></span>
         </div>
       ) : (
         <>
           <div className="p-10 overflow-x-auto">
-            <button className="btn btn-outline btn-sm" onClick={addContact}>
+            <button
+              name="add"
+              className="btn btn-outline btn-sm"
+              onClick={addContact}
+            >
               Add Contact
             </button>
             <table className="table mt-7">
               {/* head */}
-              <thead>
+              <thead className="text-sm">
                 <tr>
                   <th className="text-center">Photo</th>
                   <th className="text-center">First Name</th>
@@ -127,6 +145,7 @@ function App() {
                       </td>
                       <td className="text-center">
                         <button
+                          name="detail"
                           className="text-lg btn btn-ghost btn-xs"
                           onClick={() => showContactDetail(data.id)}
                         >
@@ -138,7 +157,10 @@ function App() {
                         >
                           <HiPencilAlt />
                         </button>
-                        <button className="text-lg btn btn-ghost btn-xs">
+                        <button
+                          className="text-lg btn btn-ghost btn-xs"
+                          onClick={() => showDeleteModal(data.id)}
+                        >
                           <BiTrash />
                         </button>
                       </td>
@@ -160,75 +182,67 @@ function App() {
           >
             ✕
           </button>
-          {isFetching ? (
-            <div className="flex items-center justify-center flex-1">
-              <span className="loading loading-spinner loading-lg"></span>
-            </div>
-          ) : (
-            <>
-              <h3 className="text-lg font-bold">Add New Contact</h3>
-              <div className="mt-5">
-                <h4 className="py-4 font-semibold">Photo url</h4>
+          <h3 className="text-lg font-bold">Add New Contact</h3>
+          <div className="mt-5">
+            <h4 className="py-4 font-semibold">Photo url</h4>
+            <input
+              type="text"
+              name="photo"
+              placeholder="Photo url"
+              className="w-full input input-bordered"
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, photo: e.target.value }))
+              }
+            />
+            <div className="flex gap-8">
+              <div>
+                <h4 className="py-4 font-semibold">First Name</h4>
                 <input
                   type="text"
-                  name="photo"
-                  placeholder="Photo url"
+                  name="firstName"
+                  placeholder="First Name"
                   className="w-full input input-bordered"
                   onChange={(e) =>
-                    setForm((prev) => ({ ...prev, photo: e.target.value }))
+                    setForm((prev) => ({
+                      ...prev,
+                      firstName: e.target.value,
+                    }))
                   }
                 />
-                <div className="flex gap-8">
-                  <div>
-                    <h4 className="py-4 font-semibold">First Name</h4>
-                    <input
-                      type="text"
-                      name="firstName"
-                      placeholder="First Name"
-                      className="w-full input input-bordered"
-                      onChange={(e) =>
-                        setForm((prev) => ({
-                          ...prev,
-                          firstName: e.target.value,
-                        }))
-                      }
-                    />
-                  </div>
-                  <div>
-                    <h4 className="py-4 font-semibold">Last Name</h4>
-                    <input
-                      type="text"
-                      name="lastName"
-                      placeholder="Last Name"
-                      className="w-full input input-bordered"
-                      onChange={(e) =>
-                        setForm((prev) => ({
-                          ...prev,
-                          lastName: e.target.value,
-                        }))
-                      }
-                    />
-                  </div>
-                </div>
-                <h4 className="py-4 font-semibold">Age</h4>
+              </div>
+              <div>
+                <h4 className="py-4 font-semibold">Last Name</h4>
                 <input
-                  type="number"
-                  name="age"
-                  placeholder="Age"
+                  type="text"
+                  name="lastName"
+                  placeholder="Last Name"
                   className="w-full input input-bordered"
                   onChange={(e) =>
-                    setForm((prev) => ({ ...prev, age: e.target.value }))
+                    setForm((prev) => ({
+                      ...prev,
+                      lastName: e.target.value,
+                    }))
                   }
                 />
               </div>
-              <div className="modal-action">
-                {/* if there is a button in form, it will close the modal */}
-                <button className="btn" onClick={processAddContact}>
-                  Add Contact
-                </button>
-              </div>
-            </>
-          )}
+            </div>
+            <h4 className="py-4 font-semibold">Age</h4>
+            <input
+              type="number"
+              name="age"
+              placeholder="Age"
+              className="w-full input input-bordered"
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, age: e.target.value }))
+              }
+            />
+          </div>
+          <div className="modal-action">
+            {/* if there is a button in form, it will close the modal */}
+            <button className="btn" onClick={processAddContact}>
+              Add Contact
+            </button>
+          </div>
         </form>
       </dialog>
       {/* add */}
@@ -236,30 +250,36 @@ function App() {
       {/* edit */}
       <dialog id="edit" className="modal modal-bottom sm:modal-middle">
         <form method="dialog" className="modal-box">
-          <button
-            htmlFor="edit"
-            className="absolute btn btn-sm btn-circle btn-ghost right-2 top-2"
-          >
-            ✕
-          </button>
           {isFetching ? (
             <div className="flex items-center justify-center flex-1">
-              <span className="loading loading-spinner loading-lg"></span>
+              <span
+                className="loading loading-spinner loading-lg"
+                data-testid="loading-edit"
+              ></span>
             </div>
           ) : (
             <>
+              <button
+                htmlFor="edit"
+                className="absolute btn btn-sm btn-circle btn-ghost right-2 top-2"
+              >
+                ✕
+              </button>
               <h3 className="text-lg font-bold">Contact Edit</h3>
-              <div className="mt-5">
-                <h4 className="py-4 font-semibold">Photo url</h4>
+              <div className="mt-7">
+                <text className="text-xs font-semibold text-red-500">
+                  Nb: Fill in the form if you want to make a change!
+                </text>
+                <h4 className="pt-3 pb-4 font-semibold">Photo url</h4>
                 <input
                   type="text"
                   name="photo"
-                  placeholder="Type here"
+                  placeholder={detail?.data?.photo}
                   className="w-full input input-bordered"
                   onChange={(e) =>
                     setForm((prev) => ({ ...prev, photo: e.target.value }))
                   }
-                  defaultValue={detail?.data?.photo}
+                  value={form?.photo}
                 />
                 <div className="flex gap-8">
                   <div>
@@ -267,7 +287,7 @@ function App() {
                     <input
                       type="text"
                       name="firstName"
-                      placeholder="Type here"
+                      placeholder={detail?.data?.firstName}
                       className="w-full input input-bordered"
                       onChange={(e) =>
                         setForm((prev) => ({
@@ -275,7 +295,6 @@ function App() {
                           firstName: e.target.value,
                         }))
                       }
-                      defaultValue={detail?.data?.firstName}
                     />
                   </div>
                   <div>
@@ -283,7 +302,7 @@ function App() {
                     <input
                       type="text"
                       name="lastName"
-                      placeholder="Type here"
+                      placeholder={detail?.data?.lastName}
                       className="w-full input input-bordered"
                       onChange={(e) =>
                         setForm((prev) => ({
@@ -291,7 +310,6 @@ function App() {
                           lastName: e.target.value,
                         }))
                       }
-                      defaultValue={detail?.data?.lastName}
                     />
                   </div>
                 </div>
@@ -299,12 +317,11 @@ function App() {
                 <input
                   type="number"
                   name="age"
-                  placeholder="Type here"
+                  placeholder={detail?.data?.age}
                   className="w-full input input-bordered"
                   onChange={(e) =>
                     setForm((prev) => ({ ...prev, age: e.target.value }))
                   }
-                  defaultValue={detail?.data?.age}
                 />
               </div>
               <div className="modal-action">
@@ -369,6 +386,22 @@ function App() {
         </form>
       </dialog>
       {/* detail */}
+
+      {/* delete */}
+      <dialog id="delete" className="modal">
+        <form method="dialog" className="modal-box">
+          <h3 className="text-lg font-bold">Delete Contact!</h3>
+          <p className="py-4">Delete this contact?</p>
+          <div className="modal-action">
+            {/* if there is a button in form, it will close the modal */}
+            <button className="btn" onClick={() => processDeleteContact(id)}>
+              Yes, Delete
+            </button>
+            <button className="btn">No</button>
+          </div>
+        </form>
+      </dialog>
+      {/* delete */}
     </>
   );
 }

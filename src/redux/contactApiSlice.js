@@ -23,7 +23,7 @@ export const contactApiSlice = createApi({
           "Content-type": "application/json",
         },
       }),
-      providesTags: ["contactApi"],
+      invalidatesTags: ["contactApi"],
     }),
     postContact: builder.mutation({
       query: (data) => ({
