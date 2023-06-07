@@ -16,7 +16,7 @@ function App() {
     firstName: "",
     lastName: "",
     photo: "",
-    age: null,
+    age: "",
   });
   const { data, isLoading } = useGetAllContactQuery();
   const { data: detail, isFetching, refetch } = useGetContactByIdQuery(id);
@@ -31,6 +31,13 @@ function App() {
   };
 
   const addContact = () => {
+    setForm((prev) => ({
+      ...prev,
+      firstName: "",
+      lastName: "",
+      age: null,
+      photo: "",
+    }));
     window.add.showModal();
   };
 
@@ -59,7 +66,7 @@ function App() {
       ...prev,
       firstName: "",
       lastName: "",
-      age: null,
+      age: "",
       photo: "",
     }));
   };
@@ -79,7 +86,7 @@ function App() {
       ...prev,
       firstName: "",
       lastName: "",
-      age: null,
+      age: "",
       photo: "",
     }));
   };
@@ -193,6 +200,7 @@ function App() {
               onChange={(e) =>
                 setForm((prev) => ({ ...prev, photo: e.target.value }))
               }
+              value={form?.photo}
             />
             <div className="flex gap-8">
               <div>
@@ -208,6 +216,7 @@ function App() {
                       firstName: e.target.value,
                     }))
                   }
+                  value={form?.firstName}
                 />
               </div>
               <div>
@@ -223,6 +232,7 @@ function App() {
                       lastName: e.target.value,
                     }))
                   }
+                  value={form?.lastName}
                 />
               </div>
             </div>
@@ -235,6 +245,7 @@ function App() {
               onChange={(e) =>
                 setForm((prev) => ({ ...prev, age: e.target.value }))
               }
+              value={form?.age}
             />
           </div>
           <div className="modal-action">
@@ -267,9 +278,9 @@ function App() {
               </button>
               <h3 className="text-lg font-bold">Contact Edit</h3>
               <div className="mt-7">
-                <text className="text-xs font-semibold text-red-500">
+                <small className="text-xs font-semibold text-red-500">
                   Nb: Fill in the form if you want to make a change!
-                </text>
+                </small>
                 <h4 className="pt-3 pb-4 font-semibold">Photo url</h4>
                 <input
                   type="text"
